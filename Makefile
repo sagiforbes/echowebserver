@@ -9,6 +9,6 @@ rebuild: clean build
 docker: rebuild
 	docker build -t ${DOCKER_IMAGE}:latest .
 
-docker-push: docker
+push-docker: docker
 	docker push ${DOCKER_IMAGE}:latest
 

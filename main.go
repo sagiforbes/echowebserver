@@ -24,13 +24,6 @@ func main() {
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
-// Handler
-func httpEchoMiddle() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return reqHandler
-	}
-}
-
 type echoRespons struct {
 	ReqTime     time.Time
 	CallerAddr  string
@@ -42,19 +35,28 @@ type echoRespons struct {
 	Headers     http.Header
 }
 
-func reqHandler(c echo.Context) error {
-	var req *http.Request = c.Request()
-	ret := &echoRespons{
-		ReqTime:     time.Now(),
-		Proto:       req.Proto,
-		CallerAddr:  req.RemoteAddr,
-		Method:      req.Method,
-		Path:        req.URL.Path,
-		Uri:         req.RequestURI,
-		Queryvalues: req.URL.Query(),
-		Headers:     req.Header,
-	}
-	req.URL.Query()
+// Handler
+func httpEchoMiddle() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			if c.Request().URL.Path == "/health" {
+				return c.NoContent(http.StatusOK)
+			}
 
-	return c.JSONPretty(http.StatusOK, ret, "  ")
+			var req *http.Request = c.Request()
+			ret := &echoRespons{
+				ReqTime:     time.Now(),
+				Proto:       req.Proto,
+				CallerAddr:  req.RemoteAddr,
+				Method:      req.Method,
+				Path:        req.URL.Path,
+				Uri:         req.RequestURI,
+				Queryvalues: req.URL.Query(),
+				Headers:     req.Header,
+			}
+			req.URL.Query()
+
+			return c.JSONPretty(http.StatusOK, ret, "  ")
+		}
+	}
 }
